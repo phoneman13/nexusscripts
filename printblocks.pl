@@ -12,7 +12,7 @@ printblocks.pl - Dump JSON and related info about blocks to stdout - recursively
 
 You must be running nexus - this script should be run from the folder where your nexus binary is located.
 
- $ ./printblocks.pl -b current -n 100 -m 2
+ $ ./printblocks.pl -b current -n 100 -m 2 -x $HOME/code/Nexus/nexus
 
 =head1 DESCRIPTION
 
@@ -38,19 +38,30 @@ Command line arguments.
 
 =head1 NOTES
 
-As of 0.7 bitcoin-cli has getrawtransaction support - i couldn't find it in nexus http://stackoverflow.com/questions/8734694/see-foreign-bitcoin-transactions
+If you want prettier output to view e.g. one block, try this.
+Install the 'jq' program with 
+$ sudo apt-get install jq
+Then, run something like this. jq should colorize and pretty print the output.
+$ ./printblocks.pl -b current -n 1 -m 0 | tail -n1 | jq ''
+
+One way to use this script would be to run it and pipe the output to a .txt file which you can later search with standard unix tools like grep. For example
+$ ./printblocks.pl -b current -n 1000 -m 0 > last-1000-blocks-json.txt
+$ grep <something> last-1000-blocks-json.txt
 
 This script has no external dependencies and should run on any modern *nix system. Thank you for riding mag lev.
 
 I added a txcount field to the block JSON because it is non-trivial to determine how many transactions are in the flat transaction array.
+
+I also added a txdetails field to the block JSON so it's easier to see the transaciton details.
 
 =cut
 
 my $startblockx = 'current';
 my $numblocks = 0;
 my $minimumtx = 1;
-my $nexusfull = -e '../nexus' ? '../nexus' : 
-                -e './nexus'  ? './nexus' : '';
+my $nexusfull = -e './nexus' ? './nexus' : 
+                -e "$ENV{HOME}/code/Nexus/nexus"  ? "$ENV{HOME}/code/Nexus/nexus" : 
+                -e '../nexus'  ? '../nexus' : '';
 my $result = GetOptions (
 	"mintx|m=i"      => \$minimumtx,
 	"numblocks|n=i"  => \$numblocks,
@@ -76,19 +87,19 @@ else {
 }
 
 if ($block->{txcount} >= $minimumtx) {
-	print Dumper($block);
+	print JSON::Tiny::encode_json($block)."\n";
 }
 
 my $prevblock = $block->{previousblockhash};
 
-if ($numblocks > 0) {
-	for (my $bi = 0; $bi < $numblocks; ++$bi) {
-		print "Getting previous block (previous count = $bi)\n";
+if ($numblocks > 1) {
+	for (my $bi = 1; $bi < $numblocks; ++$bi) {
+		print STDERR "Getting previous block (previous count = $bi)\n";
 		$block = getblock(hash => $prevblock);
 		if ($block->{txcount} >= $minimumtx) {
-			print Dumper($block);
+			print JSON::Tiny::encode_json($block)."\n";
 		}
-		print "Got block at height $block->{height}\n";
+		print STDERR "Got block at height $block->{height}\n";
 		$prevblock = $block->{previousblockhash};
 	}
 }
@@ -107,6 +118,24 @@ sub gettxcount {
 	return $txcount;
 }
 
+sub gettxdetails {
+	# Given a block, get the transaction details
+	my %args = @_;
+	my $block = $args{block};
+	die 'you must pass in a block data structure' unless $block and UNIVERSAL::isa($block,'HASH');
+	my @txdetails;
+	foreach my $entry (@{$block->{tx}}) {
+		#print "Looking at ($entry)\n";
+		if ($entry =~ /^(\w{128}\w*) [^s]/ ) {
+			my $txhash = $1;
+			my $txdstr = runcmd("$nexusfull getglobaltransaction $txhash");
+			my $txd  = JSON::Tiny::decode_json($txdstr);
+			push @txdetails,  $txd;
+		}
+	}
+	return \@txdetails;
+}
+
 sub getblock {
 	# Get a block - also count transactions and adds txcount to data structure
 	my %args = @_;
@@ -114,19 +143,20 @@ sub getblock {
 	if ($args{current}) {
 		$args{number} = runcmd("$nexusfull getblockcount");
 		chomp $args{number};
-		print "Current block number is $args{number}\n";
+		print STDERR "Current block number is $args{number}\n";
 	}
 	my ($blocknum,$blockhash) = ($args{number},$args{hash});
 	if ($blocknum) {
-		print "block num is ($blocknum)\n";
+		print STDERR "block num is ($blocknum)\n";
 		$blockhash = runcmd("$nexusfull getblockhash $blocknum");
 		chomp $blockhash;
 	}
-	print "Block hash is: $blockhash\n";
+	print STDERR "Block hash is: $blockhash\n";
 	# the true here means include transaction info
 	my $blockstr = runcmd("$nexusfull getblock $blockhash true");
 	my $block  = JSON::Tiny::decode_json($blockstr);
 	$block->{txcount} = gettxcount(block => $block);
+	$block->{txdetails} = gettxdetails(block => $block);
 	return $block;
 #print Dumper $block;
 #{
