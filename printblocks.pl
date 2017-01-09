@@ -93,7 +93,7 @@ if ($block->{txcount} >= $minimumtx) {
 my $prevblock = $block->{previousblockhash};
 
 if ($numblocks > 1) {
-	for (my $bi = 1; $bi < $numblocks; ) {
+	for (my $bi = 0; $bi < $numblocks; ) {
 		print STDERR "Getting previous block (previous count = $bi)\n";
 		$block = getblock(hash => $prevblock);
 		if ($block->{txcount} >= $minimumtx) {

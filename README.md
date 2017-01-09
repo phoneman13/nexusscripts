@@ -17,7 +17,7 @@ See the source code for documentation.
 
 Example: See info on the last 10 blocks which contain at least one non-coinbase transaction.
 
- ./printblocks.pl -b current -n 100 -m 2
+ ./printblocks.pl -b current -n 10 -m 2
 
 
 # THE TRUTH IS OUT THERE
