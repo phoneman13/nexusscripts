@@ -93,10 +93,11 @@ if ($block->{txcount} >= $minimumtx) {
 my $prevblock = $block->{previousblockhash};
 
 if ($numblocks > 1) {
-	for (my $bi = 1; $bi < $numblocks; ++$bi) {
+	for (my $bi = 1; $bi < $numblocks; ) {
 		print STDERR "Getting previous block (previous count = $bi)\n";
 		$block = getblock(hash => $prevblock);
 		if ($block->{txcount} >= $minimumtx) {
+			++$bi;
 			print JSON::Tiny::encode_json($block)."\n";
 		}
 		print STDERR "Got block at height $block->{height}\n";
