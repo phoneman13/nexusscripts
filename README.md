@@ -2,9 +2,17 @@
 
 Scripts related to Nexus. View the script source for more info on how to run.
 
+## Install Nexus from source on Ubuntu by copy/pasting a single command
+
+Use with caution, but this can be a fast way to get up and running.
+
+This does it all, including downloading and installing this very repository, which it will install under $HOME/code.
+
+ $ curl -L https://github.com/physicsdude/nexusscripts/blob/master/bootstrap/bootstrap.sh | bash
+
 ## install-nexus-on-ubuntu.sh
 
-You can use this script to install Nexus from scratch on an Ubuntu.
+You can use this script to install Nexus from scratch on an Ubuntu (this is used by bootstrap.sh).
 It should also work on other Debian-like systems but hasn't been tested.
 You can run it with the command:
 
