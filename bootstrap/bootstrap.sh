@@ -14,7 +14,7 @@ cd ${HOME}/code
 
 which git >/dev/null 2>&1 || sudo apt-get install git
 
-ls ${HOME}/code/nexusscripts >/dev/null 2>&1 git clone https://github.com/physicsdude/nexusscripts.git
+ls ${HOME}/code/nexusscripts >/dev/null 2>&1 || git clone https://github.com/physicsdude/nexusscripts.git
 
 cd ${HOME}/code/nexusscripts
 

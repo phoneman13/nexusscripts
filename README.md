@@ -8,7 +8,7 @@ Use with caution, but this can be a fast way to get up and running.
 
 This does it all, including downloading and installing this very repository, which it will install under $HOME/code.
 
- $ curl -L https://github.com/physicsdude/nexusscripts/blob/master/bootstrap/bootstrap.sh | bash
+ $ curl -L https://raw.githubusercontent.com/physicsdude/nexusscripts/master/bootstrap/bootstrap.sh | bash
 
 ## install-nexus-on-ubuntu.sh
 
