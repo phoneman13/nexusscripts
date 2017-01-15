@@ -1,0 +1,7 @@
+rpcuser=rpcserver
+rpcpassword=PUTYOUROWNVERYRANDOMPASSWORDHERE
+rpcallowip=127.0.0.1
+daemon=1
+server=1
+debug=1
+mining=1
