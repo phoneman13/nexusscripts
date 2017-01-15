@@ -27,7 +27,7 @@ Example: See info on the last 10 blocks which contain at least one non-coinbase 
 
  ./printblocks.pl -b current -n 10 -m 2
 
-# Mining Notes
+# Solo CPU Mining
 
 Here's how to set up the code for CPU solo mining on Ubuntu 14 or 16.
 
@@ -39,7 +39,13 @@ Here's how to set up the code for CPU solo mining on Ubuntu 14 or 16.
  First, make sure Nexus is running and that you are up to date with the blockchain.
  Then can run it like this in the PrimeSoloMining directory.
 
+ ./startminer.sh
+
+ or, if you prefer
+
  ./miner localhost 9325 $(nproc)
+
+ localhost means it will only connect to your local computer, 9325 is the RPC port for nexus, and the last number is the number of threads you want to mine with. $(nproc) is a way to dynamically figure out how many processors you have.
 
 ## nexus.conf configuration file
 
