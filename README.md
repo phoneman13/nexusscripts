@@ -51,13 +51,13 @@ Here's how to set up the code for CPU solo mining on Ubuntu 14 or 16.
 
 If you want to solo CPU mine nexus, you'll want your nexus.conf file to look something like the one shown below. This file is in .Nexus/nexus.conf under your home directory.
 
- rpcuser=rpcserver
- rpcpassword=PUTYOUROWNVERYRANDOMPASSWORDHERE
- rpcallowip=127.0.0.1
- daemon=1
- server=1
- debug=1
- mining=1
+    rpcuser=rpcserver
+    rpcpassword=PUTYOUROWNVERYRANDOMPASSWORDHERE
+    rpcallowip=127.0.0.1
+    daemon=1
+    server=1
+    debug=1
+    mining=1
 
 You should re-start nexus if you make changes to your nexus.conf file.
 
