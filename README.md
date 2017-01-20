@@ -27,6 +27,10 @@ Example: See info on the last 10 blocks which contain at least one non-coinbase 
 
  ./printblocks.pl -b current -n 10 -m 2
 
+## paperwallet.pl
+
+For information on the paper wallet creator, please see README-PAPERWALLET.md or perldoc paperwallet.pl
+
 # Solo CPU Mining
 
 Here's how to set up the code for CPU solo mining on Ubuntu 14 or 16.

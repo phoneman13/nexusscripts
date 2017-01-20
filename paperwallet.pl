@@ -73,6 +73,8 @@ Selected setions from the GPL v2:
 
 =cut
 
+# How to generate the readme: perl -MPod::Markdown -e 'Pod::Markdown->new->filter(@ARGV)' paperwallet.pl > README-PAPERWALLET.md
+
 my $debug = 0;
 my $debugcmd = 0;
 my $savejson = 0;
