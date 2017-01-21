@@ -82,7 +82,7 @@ echo "Downloading and Setting Up Nexus blockchain bootstrap file."
 
 which wget || sudo apt-get install wget
 
-LLD_BOOTSTRAP="20170101.rar"
+LLD_BOOTSTRAP="recent.rar"
 
 ls ${LLD_BOOTSTRAP} ||  wget http://nexusearth.com/bootstrap/LLD-Database/${LLD_BOOTSTRAP}
 
