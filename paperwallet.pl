@@ -18,6 +18,10 @@ You must be running nexus - you can include the full path to the nexus binary on
 
 In the example shown, a paper wallet will be printed to ~/NexusPaperWallets/
 
+The wallet will contain public addresses and private keys in plain text and QR code formats.
+
+Note, you can use this script in addition to a temporary wallet, e.g. on an Ubuntu live usb, to make Nexus paper wallets suitable for giving out to friends, etc. Just make sure not to give out private keys to any addresses you plan on filling with your own NXS!
+
 =head1 INTERFACE
 
 Command line arguments.
@@ -30,7 +34,9 @@ Command line arguments.
 
 =item B<-v or --debugcmd> Print all shell commands run from script. May contain private keys.
 
-=item B<-j or --savejson> Save a JSON version of the public and private key information as well.
+=item B<-j or --savejson> (Default true) Save a JSON version of the public and private key information as well.
+
+=item B<-n or --nosavejson> Do not save a JSON version of the public and private key information as well.
 
 =item B<-p or --noview> Do not attempt to open the PDF viewer when complete (good for security or if you are running on a server with no GUI)
 
@@ -83,7 +89,8 @@ Add ability to restore addresses to the wallet from a json file.
 
 my $debug = 0;
 my $debugcmd = 0;
-my $savejson = 0;
+my $savejson = 1;
+my $nosavejson = 0;
 my $noview = 0;
 my $paperwalletdir = "$ENV{HOME}/NexusPaperWallets";
 my $time = time();
@@ -97,12 +104,14 @@ my $result = GetOptions (
   "debug|d"  => \$debug,
   "debugcmd|v"  => \$debugcmd,
   "savejson|j"  => \$savejson,
+  "nosavejson|n"  => \$savejson,
   "noview|p"  => \$noview,
 ) or die("Error in command line arguments\n");
 die 'please provide a nexus binary name or run from your Nexus folder' unless $nexusfull;
 if (!-f $nexusfull) {
   die "Nexus binary does not appear to exist at ($nexusfull). Please supply the path to your nexus binary.";
 }
+$savejson = 0 if $nosavejson;
 
 ensurepdflatex();
 ensureqrcode();
@@ -178,6 +187,13 @@ print "Paper wallet written to $paperwalletpdffile.\n";
 if ($savejson) {
 	print "savejson mode enabled. Also saved account/address/private keys to json file at $jsonfile\n";
 }
+
+my $aux = $paperwalletlatexfile;
+my $log = $paperwalletlatexfile;
+$aux =~ s/tex$/aux/;
+$log =~ s/tex$/log/;
+unlink $aux;
+unlink $log;
 
 print "Please print your wallet.\n";
 
@@ -315,7 +331,15 @@ THE TRUTH IS OUT THERE
 }
 
 sub ensurepdflatex {
-	runcmd("which pdflatex || sudo apt-get --no-install-recommends install texlive-base");
+	eval {
+		runcmd("which pdflatex");
+	};
+	if (my $e = $@){
+		print STDERR "Thanks for trying the paper wallet creator.\n";
+		print STDERR "First, you need to install some packages on your operating system.\n";
+		print STDERR "Please copy and paste the command below onto your command line, then try running this program again.\n";
+		print STDERR "\nsudo apt-get update && sudo apt-get -y --no-install-recommends install texlive-base texlive-extras\n";
+	}
 }
 
 sub ensureqrcode {
@@ -324,7 +348,7 @@ sub ensureqrcode {
 		runcmd("ls $qrcodedir >/dev/null");
 	};
 	if (my $e = $@) {
-		debug("qrcode latex library is not installed.");
+		print STDERR "qrcode latex library is not installed. Will try to automatically install this for you.";
 	}
 	else {
 		return 1;
@@ -351,9 +375,11 @@ sub ensureqrcode {
 	print $out $script;
 	close $out;
 
-	print "Attempting to install the qrcode latex library. If it doesn't work check out the script at /tmp/installqrcode.sh\n";
+	`chmod 755 /tmp/installqrcode.sh`;
 
-	runcmd("/bin/bash /tmp/installqrcode.sh > /tmp/installqrcode.log 2>&1");
+	print "One more thing ... you need to install the qrcode latex library.\n Copy and paste this onto your command line:\n /tmp/installqrcode.sh\n";
+
+	# runcmd("/bin/bash /tmp/installqrcode.sh > /tmp/installqrcode.log 2>&1");
 }
 
 # Are not using exportkeys becasuse it does not back up keys which don't have nxs in them yet.
@@ -379,58 +405,8 @@ sub runcmd {
 	return $out;
 }
 
-#addmultisigaddress <nrequired> <'["key","key"]'> [account]
 #backupwallet <destination> - backs up the wallet.dat
-#checkwallet
-#dumpprivkey <NexusAddress>
-#dumprichlist <count>
 #exportkeys - backs up only keys with a balance
-#getaccount <Nexusaddress>
-#getaccountaddress <account>
-#getaddressbalance <address>
-#getaddressesbyaccount <account>
-#getbalance [account] [minconf=1]
-#getblock <hash> [txinfo]
-#getblockcount
-#getblockhash <index>
-#getconnectioncount
-#getdifficulty
-#gettransaction <txid>
-#getinfo
-#getmininginfo
-#getnewaddress [account]
-#getpeerinfo
-#getreceivedbyaccount <account> [minconf=1]
-#getreceivedbyaddress <Nexusaddress> [minconf=1]
-#getsupplyrate
-#gettransaction <txid>
-#help [command]
-#importkeys
-#importprivkey <PrivateKey> [label]
-#keypoolrefill
-#listaccounts [minconf=1]
-#listreceivedbyaccount [minconf=1] [includeempty=false]
-#listreceivedbyaddress [minconf=1] [includeempty=false]
-#listsinceblock [blockhash] [target-confirmations]
-#listtransactions [account] [count=10] [from=0]
-#listunspent [minconf=1] [maxconf=9999999]  ["address",...]
-#makekeypair [prefix]
-#move <fromaccount> <toaccount> <amount> [minconf=1] [comment]
-#repairwallet
-#rescan
-#reservebalance [<reserve> [amount]]
-#sendfrom <fromaccount> <toNexusaddress> <amount> [minconf=1] [comment] [comment-to]
-#sendmany <fromaccount> {address:amount,...} [minconf=1] [comment]
-#sendtoaddress <Nexusaddress> <amount> [comment] [comment-to]
-#setaccount <Nexusaddress> <account>
-#settxfee <amount>
-#signmessage <Nexusaddress> <message>
-#stop
-#validateaddress <Nexusaddress>
-#verifymessage <Nexusaddress> <signature> <message>
-#walletlock
-#walletpassphrase <passphrase> <timeout> [mintonly]
-#walletpassphrasechange <oldpassphrase> <newpassphrase>
 
 package JSON::Tiny;
 
@@ -738,3 +714,4 @@ sub _throw {
 package JSON::Tiny::_Bool;
 use overload '""' => sub { ${$_[0]} }, fallback => 1;
 1;
+# THE TRUTH IS OUT THERE
