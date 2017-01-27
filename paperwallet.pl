@@ -6,7 +6,7 @@ use Getopt::Long qw/GetOptions/;
 
 =head1 NAME
 
-paperwallet.pl - Back up private keys into a PDF format which can be printed to paper.
+paperwallet.pl - Back up keys to PDF format with QR codes, which can be printed to paper.
 
 =head1 USAGE
 
@@ -39,6 +39,8 @@ Command line arguments.
 =item B<-n or --nosavejson> Do not save a JSON version of the public and private key information as well.
 
 =item B<-p or --noview> Do not attempt to open the PDF viewer when complete (good for security or if you are running on a server with no GUI)
+
+=item B<-f or --nopdf> Do not attempt to build the PDF. This is useful if you want to generate json and .tex versions of your wallet but do not want to install the large texlive packages necessary to run pdflatex. You can copy the .json and .tex files to another computer and build the pdfs from there if you want.
 
 =back
 
@@ -92,6 +94,7 @@ my $debugcmd = 0;
 my $savejson = 1;
 my $nosavejson = 0;
 my $noview = 0;
+my $nopdf = 0;
 my $paperwalletdir = "$ENV{HOME}/NexusPaperWallets";
 my $time = time();
 my $paperwalletlatexfile = "$ENV{HOME}/NexusPaperWallets/NexusPaperWallet$time.tex";
@@ -106,6 +109,7 @@ my $result = GetOptions (
   "savejson|j"  => \$savejson,
   "nosavejson|n"  => \$savejson,
   "noview|p"  => \$noview,
+  "nopdf|f"  => \$nopdf,
 ) or die("Error in command line arguments\n");
 die 'please provide a nexus binary name or run from your Nexus folder' unless $nexusfull;
 if (!-f $nexusfull) {
@@ -113,32 +117,23 @@ if (!-f $nexusfull) {
 }
 $savejson = 0 if $nosavejson;
 
-ensurepdflatex();
-ensureqrcode();
+# Get priv keys returned by exportkeys command
+my $exportkeysval = exportkeys();
+
+# Create a way to keep track of if those keys have been seen
+my %checkprivkeys = map { $_ => 0 } keys %{$exportkeysval};
+
+# Set up latex file
+if (!$nopdf) {
+	ensurepdflatex();
+	ensureqrcode();
+}
 
 my $walletfh;
 createlatexwallet($walletfh);
 
 my $allkeyinfo = {};
-
-my $accounts = listaccounts();
-
-my $addresses;
-
-while (my ($acct,$bal) = each %{$accounts}) {
-	debug("Attempting to fetch addresses for account $acct.\n");
-	$allkeyinfo->{$acct} = getaddressesbyaccount(account => $acct);
-}
-
-# Fetch private keys
-while (my ($acct,$acinfo) = each %{$allkeyinfo}) {
-	while (my ($addr,$adinfo) = each %{$acinfo}) {
-		my $privkeymap = dumpprivkey(address => $addr);
-		$allkeyinfo->{$acct}{$addr}{privkey} = $privkeymap->{privkey};
-	}	
-}
-
-#print Dumper($allkeyinfo) if $debug;
+getallkeyinfo($allkeyinfo);
 
 my $jsonfile = $paperwalletlatexfile;
 if ($savejson) {
@@ -176,35 +171,92 @@ while (my ($acct,$acinfo) = each %{$allkeyinfo}) {
 
 printtolatexwallet(latexending());
 
-debug("Running pdflatex\n");
-
-runcmd("cd $paperwalletdir && pdflatex $paperwalletlatexfile");
 
 my $paperwalletpdffile = $paperwalletlatexfile;
-$paperwalletpdffile =~ s/\.tex$/.pdf/;
-print "Paper wallet written to $paperwalletpdffile.\n";
+if ($nopdf) {
+	print "nopdf mode selected. Your .tex file is available at $paperwalletlatexfile.";	
+}
+else {
+	debug("Running pdflatex\n");
+	runcmd("cd $paperwalletdir && pdflatex $paperwalletlatexfile");
+
+	$paperwalletpdffile =~ s/\.tex$/.pdf/;
+	print "Paper wallet written to $paperwalletpdffile.\n";
+}
 
 if ($savejson) {
 	print "savejson mode enabled. Also saved account/address/private keys to json file at $jsonfile\n";
 }
 
-my $aux = $paperwalletlatexfile;
-my $log = $paperwalletlatexfile;
-$aux =~ s/tex$/aux/;
-$log =~ s/tex$/log/;
-unlink $aux;
-unlink $log;
+if (!$nopdf) {
+	my $aux = $paperwalletlatexfile;
+	my $log = $paperwalletlatexfile;
+	$aux =~ s/tex$/aux/;
+	$log =~ s/tex$/log/;
+	unlink $aux;
+	unlink $log;
 
-print "Please print your wallet.\n";
+	print "Please print your wallet.\n";
 
-print "Opening PDF viewer.\n" unless $noview;
+	print "Opening PDF viewer.\n" unless $noview;
 
-runcmd("xdg-open $paperwalletpdffile") unless $noview;
+	runcmd("xdg-open $paperwalletpdffile") unless $noview;
+}
 
 exit 0;
 
 
 
+my $getallkeyinforuncount = 0;
+sub getallkeyinfo {
+	my $allkeyinfo = shift;
+	$getallkeyinforuncount++;
+	die 'need allkeyinfo' unless defined $allkeyinfo;
+
+	# Get all account names from wallet
+	my $accounts = listaccounts();
+
+	# Get addresses for each account
+	#  This way we get all addresses, even those with no balance.
+	#  This can be useful if you want to create a bunch of empty paper wallets.
+	#  Or if you plan to use addresses later and don't want to back up every time you add a value.
+	my $addresses;
+
+	while (my ($acct,$bal) = each %{$accounts}) {
+		debug("Attempting to fetch addresses for account $acct.\n");
+		$allkeyinfo->{$acct} = getaddressesbyaccount(account => $acct);
+	}
+
+	# Fetch private keys from each address
+	#  Also, check if priv keys from export keys have been seen
+	while (my ($acct,$acinfo) = each %{$allkeyinfo}) {
+		while (my ($addr,$adinfo) = each %{$acinfo}) {
+			my $privkeymap = dumpprivkey(address => $addr);
+			$allkeyinfo->{$acct}{$addr}{privkey} = $privkeymap->{privkey};
+			$checkprivkeys{$privkeymap->{privkey}}++ if exists $checkprivkeys{$privkeymap->{privkey}};
+		}	
+	}
+	
+	# Sometimes exportkeys finds private keys (usually from mining) that are not returned by the getaddressesbyaccount method.
+	#  If this is the case, import them and then re-run this getallkeyinfo sub to make sure we get info on all keys for the paper wallet.
+	my $imported = 0;
+	while (my ($k,$v) = each %checkprivkeys) {
+		next if $v > 0;
+		print STDERR "WARNING: ORPHANED KEY FOUND: $k. Importing.\n";
+		importprivkey(privkey => $k);
+		$imported++;
+	}
+
+	if ($imported) {
+		if ($getallkeyinforuncount > 2) {
+			die "This shouldn't happen, bailing out to avoid infinite recursion.";
+		}
+		print STDERR "IMPORTED SOME KEYS, RE-RUNNING ADDRESS SUB\n";
+		getallkeyinfo($allkeyinfo);
+	}
+
+	return $allkeyinfo;
+}
 
 sub ensurewalletdir {
 	if (!-e $paperwalletdir) {
@@ -290,6 +342,52 @@ sub dumpprivkey {
 	return { privkey => $privkey };
 }
 
+sub importprivkey {
+	#dev@ubuntu:~/code/Nexus$ ./nexus importprivkey THEPRIVKEY "auto"
+	# This returns an error, but works ok:
+	#  error: {"code":-4,"message":"Error adding key to wallet"}
+	my %args = @_;
+	my $privkey = $args{privkey};
+	die "you must pass in a private key (input: '$privkey')" unless $privkey =~ /^[A-Za-z0-9]+$/;
+	# for some reason, importprivkey returns an error code of four even though it works...
+	my $ret = runcmdnoerr("$nexusfull importprivkey $privkey \"auto\"");
+	return 1;
+}
+
+sub exportkeys {
+	#dev@ubuntu:~/code/Nexus$ ./nexus exportkeys
+        # # format is account, privkey
+        #{
+        #    "Default" : "privkey1",
+        #    "Default" : "privkey2"
+        #}
+	# Sometimes keys exist in exportkeys (from mining)
+        #   which aren't found using the other methods.
+        #   We'll find those keys first, then add the keys if they aren't in an account.
+	# The info returned from exportkeys is not actually json. The keys can be repeated.
+	my %pks;
+	my $privkeystxt = runcmd("$nexusfull exportkeys");
+	# Get each line into an element of an array
+	my @pkta = split("\n",$privkeystxt);
+	# Check if the line looks like an account name : private key pair
+	for my $f (@pkta) {
+		next if $f =~ /^[{}]$/;
+		if ($f =~ /^\s*["'](\w+)['"]\s*:\s*["'](\w+)['"]/) {
+			my ($acct,$pk) = ($1,$2);
+			$pks{$pk} = $acct;
+		}
+		else {
+			print "f: $f <--- DIDN'T MATCH PATTERN\n";
+		}
+	}
+	# We'll return a format like the following, so al of the keys are unique
+        #{
+        #    "privkey1" : "AccountName",
+        #    "privkey2" : "AccountName"
+        #}
+	return \%pks;
+}
+
 sub latexbeginning {
 	my $ret = '\title{Nexus Paper Wallet}
 \author{Nexus Core Devs}
@@ -339,6 +437,7 @@ sub ensurepdflatex {
 		print STDERR "First, you need to install some packages on your operating system.\n";
 		print STDERR "Please copy and paste the command below onto your command line, then try running this program again.\n";
 		print STDERR "\nsudo apt-get update && sudo apt-get -y --no-install-recommends install texlive-base texlive-extras\n";
+		exit 2;
 	}
 }
 
@@ -377,7 +476,7 @@ sub ensureqrcode {
 
 	`chmod 755 /tmp/installqrcode.sh`;
 
-	print "One more thing ... you need to install the qrcode latex library.\n Copy and paste this onto your command line:\n /tmp/installqrcode.sh\n";
+	print "\n\nOne more thing ... you need to install the qrcode latex library.\n Copy and paste this onto your command line:\n /tmp/installqrcode.sh\n";
 
 	# runcmd("/bin/bash /tmp/installqrcode.sh > /tmp/installqrcode.log 2>&1");
 }
@@ -402,6 +501,15 @@ sub runcmd {
 		print $out;
 		die "There was an error ($?) running ($cmd):\n $!";
 	}
+	return $out;
+}
+
+sub runcmdnoerr {
+	my $cmd     = shift;
+	print STDERR "Running command ($cmd)\n" if $debugcmd;
+	my $out = `$cmd 2>&1`;
+	chomp $out;
+	print STDERR "Command returned ($out)\n" if $debugcmd;
 	return $out;
 }
 
