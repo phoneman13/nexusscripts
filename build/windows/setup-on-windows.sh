@@ -1,9 +1,18 @@
 #!/bin/bash
-# Setup deps for building nexus and bitcoin on windows
-# First, you need to install mingw
+# setup-on-windows.sh - Set up dependencies and install Nexus from source on Windows. 
+#
+# First, you need to install mingw and certain mingw packages
+#  See https://github.com/physicsdude/nexusscripts/blob/dev/build/windows/README.md
+#
 # Usage: ./setup-on-windows.sh 0.2.2.2
+#
 # Author: BryanGmyrek.com <bryangmyrekcom@gmail.com>
 # License: GPL v2
+# References: https://bitcointalk.org/index.php?topic=149479.0
+#
+# BDG: Note: To see exactly what I installed, 
+#      see the MinGW screenshots here http://imgur.com/a/JoThr
+#
 # Enable error checking (snippet=basherror!)
 set -o pipefail  # trace ERR through pipes
 set -o errtrace  # trace ERR through 'time command' and other functions
@@ -17,7 +26,7 @@ trap 'error ${LINENO}' ERR
 set -v
 set -x
 
-# It's up to the user to pass a valid version.
+# The user can pass a valid version on the command line, or the DEFAULT_VERSION will be used.
 DEFAULT_VERSION=0.2.2.2
 
 # Get the version from the command line
@@ -30,8 +39,6 @@ SETUP_NEXUS_CONF=${2:-}
 echo "${NEXUS_VERSION}"
 
 #TODO: RESARCH USING THIS TO INSTALL MINGW FROM BAT FILE
-#THEN, HAVE BAT FILE RUN THIS BAT FILE AND OTHERS
-#TO FULLY COMPLETE INSTALL AND BUILD OF STUFF
 
 ls /c/deps || mkdir -p /c/deps
 
@@ -244,6 +251,7 @@ fi
 # TODO Get the correct database
 # http://nexusearth.com/bootstrap/LLD-Database/recent.rar
 # http://nexusearth.com/bootstrap/Oracle-Database/recent.rar
+# OS/2 is the Platform for the 90's - Bill Gates -https://www.youtube.com/watch?v=FmiwiUeEn4k
 
 # Get ready for Nexus
 
