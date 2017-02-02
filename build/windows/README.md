@@ -23,25 +23,28 @@ Here are the steps you have to do before you can build Nexus from source on Wind
 ## Install the msys shell
 
 Get the MinGW installation manager from
+
 http://sourceforge.net/projects/mingw/files/Installer/mingw-get-setup.exe/download
+
 From the MinGW installation manager -> All packages -> MSYS
 mark the following for installation:
 
-msys-base bin
-msys-autoconf bin
-msys-automake bin
-msys-libtool bin
+ msys-base bin
+ msys-autoconf bin
+ msys-automake bin
+ msys-libtool bin
 
 Go to All Packages and make sure or select all of these for installation also
 
-msys-wget bin
-msys-tar bin
-msys-zip bin
-msys-gzip bin
-msys-sed bin
-msys-libopenssl bin
+ msys-wget bin
+ msys-tar bin
+ msys-zip bin
+ msys-gzip bin
+ msys-sed bin
+ msys-libopenssl bin
 
 then click on 
+
 #### Installation -> Apply changes
 
 Make sure no mingw packages are checked for installation or present from a previous install. 
@@ -65,14 +68,6 @@ In the same directory as the README.md, there should be a file called
 Double click this file to open the msys shell. 
 
 From here you can run UNIX-like commands like a real haxxor.
-
-Don't worry though, you **should** only need to run one.
-
-In your Windows file explorer, go into the directory where you downloaded the nexus scripts containing setup-on-windows.sh to.
-
-Double click on the file called
-
-    start-msys.bat
 
 Once the command window opens, copy/paste these commands:
 
@@ -124,10 +119,17 @@ When (and if) that script completes successfully, you'll have your very own vers
 #### A bit of Microsoft history.
 
 Bill Gates' grandfather was J.W. Maxwell. Maxwell founded Seattle's 
-#National City Bank in 1906. His son, James Willard Maxwell was 
-#also a banker 
+
+# National City Bank in 1906. 
+
+His son, James Willard Maxwell was 
+
+# also a banker 
+
 and 
-#established a million-dollar trust fund 
+
+# established a million-dollar trust fund 
+
 for William (Bill) Henry Gates III.
 
 #### And now for something completely different.
@@ -137,6 +139,8 @@ Richard Matthew Stallman (born March 16, 1953), often known by his initials, rms
 https://en.wikipedia.org/wiki/Richard_Stallman
 
 http://www.fsf.org/
+
+http://home.iprimus.com.au/cojoco/rms/157-5746_IMG.JPG
 
 #### How to Install Linux on Windows
 
