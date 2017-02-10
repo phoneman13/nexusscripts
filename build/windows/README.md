@@ -14,11 +14,15 @@ Several scripts have been added to ease the process.
 
 # Do this stuff first
 
-Copy or move your 'nexusscripts' folder (the one that contains this README.md) to C:\
+## Get the nexusscripts package
 
-So, when you go to 'This PC > Local Disk (C:)' you see 'nexusscripts'.
+Download this zip file
 
-Here are the steps you have to do before you can build Nexus from source on Windows using these scripts.
+https://github.com/physicsdude/nexusscripts/archive/master.zip
+
+And extract it to C:\
+
+So, when you go to 'This PC > Local Disk (C:)' you see 'nexusscripts-master'.
 
 ## Install the msys shell
 
@@ -29,19 +33,19 @@ http://sourceforge.net/projects/mingw/files/Installer/mingw-get-setup.exe/downlo
 From the MinGW installation manager -> All packages -> MSYS
 mark the following for installation:
 
- msys-base bin
  msys-autoconf bin
  msys-automake bin
+ msys-base bin
  msys-libtool bin
 
 Go to All Packages and make sure or select all of these for installation also
 
- msys-wget bin
- msys-tar bin
- msys-zip bin
  msys-gzip bin
- msys-sed bin
  msys-libopenssl bin
+ msys-sed bin
+ msys-tar bin
+ msys-wget bin
+ msys-zip bin
 
 then click on 
 
@@ -61,7 +65,11 @@ and unpack it to C:\
 
 ## Run the script to set up the prereqs and build Nexus!
 
-In the same directory as the README.md, there should be a file called
+Using the windows file explorer, navigate to:
+
+##### C:\nexusscripts-master\build\windows
+
+There should be a file in that directory called
 
 #### start-msys.bat
 
@@ -71,7 +79,7 @@ From here you can run UNIX-like commands like a real haxxor.
 
 Once the command window opens, copy/paste these commands:
 
-    cd /c/nexusscripts/build/windows
+    cd /c/nexusscripts-master/build/windows
 
     ./setup-on-windows.sh
 
