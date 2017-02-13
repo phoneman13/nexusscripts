@@ -372,7 +372,7 @@ sub exportkeys {
 	# Check if the line looks like an account name : private key pair
 	for my $f (@pkta) {
 		next if $f =~ /^[{}]$/;
-		if ($f =~ /^\s*["'](\w+)['"]\s*:\s*["'](\w+)['"]/) {
+		if ($f =~ /^\s*["'](.*?)['"]\s*:\s*["'](\w+)['"]/) {
 			my ($acct,$pk) = ($1,$2);
 			$pks{$pk} = $acct;
 		}
@@ -477,6 +477,8 @@ sub ensureqrcode {
 	`chmod 755 /tmp/installqrcode.sh`;
 
 	print "\n\nOne more thing ... you need to install the qrcode latex library.\n Copy and paste this onto your command line:\n /tmp/installqrcode.sh\n";
+
+	exit 42;
 
 	# runcmd("/bin/bash /tmp/installqrcode.sh > /tmp/installqrcode.log 2>&1");
 }
