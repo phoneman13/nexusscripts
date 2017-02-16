@@ -71,6 +71,9 @@ sudo apt-get -y install qt4-qmake libqt4-dev qt4-default
 # The qtbase5-dev deb can't be installed for successful qt compilation
 sudo apt-get -y remove qtbase5-dev || true
 
+# Will need unrar to unpack the bootstrap
+which unrar || sudo apt-get -y install unrar
+
 echo "Setting up .Nexus configuration directory."
 
 cd $HOME
@@ -87,13 +90,9 @@ LLD_BOOTSTRAP="recent.rar"
 
 ls ${LLD_BOOTSTRAP} ||  wget http://nexusearth.com/bootstrap/LLD-Database/${LLD_BOOTSTRAP}
 
-which unrar || sudo apt-get -y install unrar
-
 unrar x ${LLD_BOOTSTRAP}
 
 cd $HOME/code/Nexus
-
-sudo apt-get -y install build-essential
 
 if [ -x nexus ]; then
 	echo "The 'nexus' daemon appears to be built already. Skipping make."
