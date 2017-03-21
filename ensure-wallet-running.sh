@@ -14,18 +14,17 @@ export DISPLAY=:0
 #  and get alerts when it fails
 #  and be able to easily check onine
 #  if it's running.
-#  Report info to cronitor.io
 
 # If you want to get alerts when it
 #  fails or is not running, you can
-#  to create an account at cronitor.io
-# Create a heartbeat monitor.
+#  to create an account at https://cronitor.io
+# This is a pretty cool service that allows
+#  you to remotely monitor programs easily.
+# Once you have an account,
+#  create a heartbeat monitor.
 # You'll get a unique code for your cronitor
-#    replace the value to the right of CRONITOR=
-#    with your code above.
-
-# Also, make sure to update NEXUSPATH to the
-#  directory which contains your nexus-qt file
+#  replace the value to the right of CRONITOR=
+#  with your code above.
 
 # When this is all set, add lines like this to 
 #  your crontab file. Edit it with 'crontab -e'
