@@ -29,15 +29,13 @@ export DISPLAY=:0
 
 # When this is all set, add lines like this to 
 #  your crontab file. Edit it with 'crontab -e'
-# (add the following two lines only to your crontab
-#  file, without the #)
+# (change the paths and add the following line 
+#  to your crontab file, without the #)
 
-#*/1 * * * * touch /home/dev/code/nexusscripts/.ensure-wallet-running-lastrun-marker >/dev/null
-#*/1 * * * * /bin/bash /home/dev/code/nexusscripts/ensure-wallet-running.sh >/dev/null 2>&1
+#*/3 * * * * /bin/bash /home/dev/code/nexusscripts/ensure-wallet-running.sh >/home/dev/code/nexusscripts/.ensure-wallet-running-lastlog 2>&1
 
-# The first line is a 'sanity' check - you can check the time stamp of this file
-#  to see the last time the cron ran.
-# The second line runs this script.
+# You can look in the .ensure-wallet-running-lastlog file
+#  to see what happened the last time it ran. 
 
 # Does it look like the program is running?
 if ps ax | grep -v grep | grep $PROG > /dev/null
