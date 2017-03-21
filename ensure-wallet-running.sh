@@ -1,8 +1,13 @@
 #!/bin/bash
+set -v
+set -x
 
 CRONITOR=CHANGETHIS
-NEXUSPATH=/home/dev/code/Nexus/$PROG
+NEXUSPATH="/home/dev/code/Nexus"
 PROG=nexus-qt
+FULLPROG=$NEXUSPATH/$PROG
+
+export DISPLAY=:0
 
 # You can use this script to
 #  ensure that nexus-qt is running
@@ -44,11 +49,11 @@ else
     # No, ut, oh, better alert that there was a failure (or system restart)
     curl https://cronitor.link/$CRONITOR/fail -m 10
     # Try to start the program.
-    $PROG &
+    $FULLPROG &
     # Wait a few seconds before checking.
     sleep 10
     # Check again if it looks like the program is running.
-    if ps ax | grep -v grep | grep $PROG > /dev/null
+    if ps ax | grep -v grep | grep "$FULLPROG" > /dev/null
     then
         # It's running! Alert cronitor.
         curl https://cronitor.link/$CRONITOR/run -m 10
