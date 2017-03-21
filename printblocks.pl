@@ -26,7 +26,7 @@ Command line arguments.
 
 =item B<-x or --nexusbinary> Full path and name of your nexus binary. This is ./nexus if you are running the script in your Nexus folder.
 
-=item B<-b or --starblock> Starting block id or hash. Use current or leave out to start with most recent block. 
+=item B<-b or --startblock> Starting block id or hash. Use current or leave out to start with most recent block. 
  
 =item B<-n or --numblock> Number of blocks to print. Starting with the block given by -b, this many blocks will be looked at, going backwards in time.
  
@@ -62,6 +62,7 @@ my $minimumtx = 1;
 my $nexusfull = -e './nexus' ? './nexus' : 
                 -e "$ENV{HOME}/code/Nexus/nexus"  ? "$ENV{HOME}/code/Nexus/nexus" : 
                 -e '../nexus'  ? '../nexus' : '';
+$nexusfull = $ENV{PRINTBLOCKS_NEXUSFULL} ? $ENV{PRINTBLOCKS_NEXUSFULL} : $nexusfull;
 my $result = GetOptions (
 	"mintx|m=i"      => \$minimumtx,
 	"numblocks|n=i"  => \$numblocks,
@@ -69,9 +70,6 @@ my $result = GetOptions (
   "nexusfull|x=s"  => \$nexusfull,
 ) or die("Error in command line arguments\n");
 die 'please provide a nexus binary name or run from your Nexus folder' unless $nexusfull;
-if (!-f $nexusfull) {
-  die "Nexus binary does not appear to exist at ($nexusfull). Please supply the path to your nexus binary.";
-}
 
 if ($startblockx =~ /current/) {
 	$startblockx = runcmd("$nexusfull getblockcount");
